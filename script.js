@@ -82,8 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.addEventListener('scroll', animateOnScroll);
     
-    // Trigger animation on page load for elements in view
+    // Trigger animations on page load for elements in view
     animateOnScroll();
+    animateCircularProgress();
     
     // Update current year in footer
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -124,6 +125,33 @@ document.addEventListener('DOMContentLoaded', function() {
             bar.style.width = width;
         });
     };
+    
+    // Animate circular progress bars
+    function animateCircularProgress() {
+        const progressBars = document.querySelectorAll('.circular-progress');
+        
+        progressBars.forEach(progressBar => {
+            const circle = progressBar.querySelector('.circle-progress');
+            const percent = parseInt(progressBar.getAttribute('data-percent'));
+            const radius = circle.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (percent / 100) * circumference;
+            
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = circumference;
+            
+            // Trigger animation when in view
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
+                    circle.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
+                    circle.style.strokeDashoffset = offset;
+                    observer.unobserve(progressBar);
+                }
+            }, { threshold: 0.5 });
+            
+            observer.observe(progressBar);
+        });
+    }
     
     // Intersection Observer for skill bars
     const skillSection = document.querySelector('.skills');
